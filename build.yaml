@@ -20,7 +20,7 @@
 ---
 include:
   - board: xiao_ble
-    shield: toucan_left rgbled_adapter
+    shield: toucan_left nice_view_gem rgbled_adapter
     snippet: studio-rpc-usb-uart
     cmake-args: -DCONFIG_ZMK_STUDIO=y
   - board: xiao_ble

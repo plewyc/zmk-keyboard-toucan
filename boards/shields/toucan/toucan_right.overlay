@@ -63,6 +63,7 @@
         data-ready-gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH)>;
         sensitivity = "2x";
         invert-x;
+        primary-tap-enable;
 	    //sleep;
     };
 };

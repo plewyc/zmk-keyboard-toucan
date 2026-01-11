@@ -41,12 +41,22 @@ static void draw_top(lv_obj_t *widget, lv_color_t cbuf[], const struct status_st
     lv_obj_t *canvas = lv_obj_get_child(widget, 0);
     fill_background(canvas);
 
-    // Draw widgets
-    draw_output_status(canvas, state);
-    draw_layer_status(canvas, state);
-    draw_profile_status(canvas, state);
-    draw_battery_status(canvas, state);
-    draw_battery_peripheral_status(canvas, state);
+    // Initialize single layer for all drawing
+    lv_layer_t layer;
+    lv_canvas_init_layer(canvas, &layer);
+
+    // Draw widgets using shared layer
+    draw_output_status(&layer, state);
+    draw_layer_status(&layer, state);
+    draw_profile_status(&layer, state);
+    draw_battery_status(&layer, state);
+    draw_battery_peripheral_status(&layer, state);
+
+    // Finish the layer once all drawing is complete
+    lv_canvas_finish_layer(canvas, &layer);
+
+    // Manually invalidate canvas to ensure redraw (LVGL 9.1.0 fix)
+    lv_obj_invalidate(canvas);
 }
 
 /**
@@ -130,7 +140,7 @@ ZMK_SUBSCRIPTION(widget_battery_peripheral_status, zmk_peripheral_battery_state_
 
 static void set_layer_status(struct zmk_widget_screen *widget, struct layer_status_state state) {
     widget->state.layer_index = zmk_keymap_highest_layer_active();
-    draw_top(widget->obj, widget->cbuf3, &widget->state);
+    draw_top(widget->obj, widget->cbuf, &widget->state);
 }
 
 static void layer_status_update_cb(struct layer_status_state state) {
@@ -199,7 +209,7 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
 
     lv_obj_t *top = lv_canvas_create(widget->obj);
     lv_obj_align(top, LV_ALIGN_TOP_RIGHT, 0, 0);
-    lv_canvas_set_buffer(top, widget->cbuf, SCREEN_WIDTH, SCREEN_HEIGHT, LV_IMG_CF_TRUE_COLOR);
+    lv_canvas_set_buffer(top, widget->cbuf, SCREEN_WIDTH, SCREEN_HEIGHT, LV_COLOR_FORMAT_L8);
 
     sys_slist_append(&widgets, &widget->node);
     widget_battery_status_init();
